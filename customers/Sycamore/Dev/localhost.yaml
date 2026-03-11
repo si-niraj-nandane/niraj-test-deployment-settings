@@ -15,19 +15,20 @@ ansible_roles:
   - SHINY_CONF
   - CONFIGURE_LOGGING
   - START_SERVICES
+  - AWSCLI
 
 # Validation tests to run (GOSS)
 validation_tests:
-  config:
-    - os
-    # - packages
-    # - limits
-    # - sysctl
-  # infra:
-    # - network
-    # - storage
-  global:
-    - shinyproxy_integration
+  # config:
+  #   - os
+  #   # - packages
+  #   # - limits
+  #   # - sysctl
+  # # infra:
+  #   # - network
+  #   # - storage
+  # global:
+  #   - shinyproxy_integration
 
 services:
   # Infrastructure Services
@@ -35,19 +36,19 @@ services:
     type: "software"
     service_name: "docker"
     version: "24.0.7"
-    enabled: true
+    enabled: false
 
   - name: "nginx"
     type: "web"
     service_name: "nginx-shiny"
     version: "1.29.1"
-    enabled: true
+    enabled: false
 
   - name: "java"
     type: "software"
     service_name: "java"
     version: "17"
-    enabled: true
+    enabled: false
     configuration:
       distribution: "openjdk"
 
@@ -56,10 +57,10 @@ services:
     type: "web"
     service_name: "shinyproxy"
     version: "3.1.1"
-    enabled: true
+    enabled: false
     configuration:
       port: 8080
-      ssl_enabled: true
+      ssl_enabled: false
       authentication_type: "ldap"
       ldap_url: "ldap://sycamore.dev.org:389"
       ldap_user_dn_pattern: "cn={0},CN=Users"
@@ -73,7 +74,7 @@ services:
     type: "software"
     service_name: "r"
     version: "4.2.3"
-    enabled: true
+    enabled: false
     configuration:
       packages:
         - "rjson"
@@ -90,21 +91,21 @@ services:
     type: "software"
     service_name: "python"
     version: "3.9.21"
-    enabled: true
+    enabled: false
 
   # Database
   - name: "redis"
     type: "software"
     service_name: "redis"
     version: "6.2.17"
-    enabled: true
+    enabled: false
 
   # File Sharing - Traditional Samba
   - name: "samba"
     type: "storage"
     service_name: "samba-shiny"
     version: "4.16.4"
-    enabled: true
+    enabled: false
     configuration:
       workgroup: "SYCAMORE"
       realm: "SYCAMORE.DEV.ORG"
@@ -116,27 +117,27 @@ services:
   - name: "samba_containers"
     type: "software"
     service_name: "samba_containers"
-    enabled: true
+    enabled: false
 
   # Authentication Services
   - name: "adcli"
     type: "auth"
     service_name: "adcli"
     version: "0.9.2-1.el9"
-    enabled: true
+    enabled: false
 
   - name: "chrony"
     type: "time"
     service_name: "chrony"
     version: "latest"
-    enabled: true
+    enabled: false
 
   # Security Services
   - name: "ssh"
     type: "security"
     service_name: "ssh-shiny"
     version: "latest"
-    enabled: true
+    enabled: false
     configuration:
       port: 22
   
@@ -144,16 +145,25 @@ services:
   - name: "CDR-Audit-Node"
     type: "cdr"
     service_name: "cdr-audit"
-    enabled: true
+    enabled: false
     version: "atlanta-1.0.3.2"
     ansible_role: "CDR_AUDIT_NODE"
+
+  - name: "awscli"
+    type: "software"
+    service_name: "awscli"
+    version: "2.0"
+    enabled: true
+    ansible_role: "AWSCLI"
+    configuration:
+      aws_cli_download_url: "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip"
 
   # # Storage
   # - name: "nfs"
   #   type: "storage"
   #   service_name: "nfs"
   #   version: "latest"
-  #   enabled: true
+  #   enabled: false
 
 variables:
   server:
@@ -161,110 +171,110 @@ variables:
     user: "fsaadmin"
     timezone: "UTC"
 
-  # SHINYPROXY specific variables
-  shinyproxy:
-    proxy_max_lifetime: 240
-    version: "3.1.1"
-    port: 8080
-    ssl_enabled: true
-    authentication_type: "ldap"
-    ldap_host: "10.90.0.243"
-    ldap_port: 389
-    ldap_url: "ldap://sycamore.dev.org:389"
-    ldap_user_dn_pattern: "cn={0},CN=Users"
-    ldap_group_search_base: "OU=Groups,DC=sycamore,DC=dev,DC=org"
-    java_version: "17"
+  # # SHINYPROXY specific variables
+  # shinyproxy:
+  #   proxy_max_lifetime: 240
+  #   version: "3.1.1"
+  #   port: 8080
+  #   ssl_enabled: false
+  #   authentication_type: "ldap"
+  #   ldap_host: "10.90.0.243"
+  #   ldap_port: 389
+  #   ldap_url: "ldap://sycamore.dev.org:389"
+  #   ldap_user_dn_pattern: "cn={0},CN=Users"
+  #   ldap_group_search_base: "OU=Groups,DC=sycamore,DC=dev,DC=org"
+  #   java_version: "17"
 
-  # Infrastructure variables
-  infrastructure:
-    instance_type: "m5.2xlarge"
-    root_volume_size: "200GB"
-    swap_size: "32GB"
-    tmp_size: "60G"
+  # # Infrastructure variables
+  # infrastructure:
+  #   instance_type: "m5.2xlarge"
+  #   root_volume_size: "200GB"
+  #   swap_size: "32GB"
+  #   tmp_size: "60G"
 
-  # Network Configuration
-  network:
-    ad_domain: "SYCAMORE.DEV.ORG"
-    ad_workgroup: "SYCAMORE"
-    ad_server_ip: "10.90.0.243"
-    vpc_cidr: "10.70.0.0/16"
+  # # Network Configuration
+  # network:
+  #   ad_domain: "SYCAMORE.DEV.ORG"
+  #   ad_workgroup: "SYCAMORE"
+  #   ad_server_ip: "10.90.0.243"
+  #   vpc_cidr: "10.70.0.0/16"
 
-  # Common variables
-  common_vars:
-    org_name: "acme05"
-    customer_name: "Syc"
-    customer: "Sycamore"
-    org: "acme05"
-    env: "dev"
-    server: "shiny-server"
-    aws_region: "us-east-2"
+  # # Common variables
+  # common_vars:
+  #   org_name: "acme05"
+  #   customer_name: "Syc"
+  #   customer: "Sycamore"
+  #   org: "acme05"
+  #   env: "dev"
+  #   server: "shiny-server"
+  #   aws_region: "us-east-2"
 
-  # Active Directory Configuration
-  adcli:
-    ad_software: "winbind"
-    ad_domainName: "sycamore.dev.org"
-    ad_workgroup: "SYCAMORE"
-    ad_host: "10.90.0.243"
-    ad_username: "Administrator"
+  # # Active Directory Configuration
+  # adcli:
+  #   ad_software: "winbind"
+  #   ad_domainName: "sycamore.dev.org"
+  #   ad_workgroup: "SYCAMORE"
+  #   ad_host: "10.90.0.243"
+  #   ad_username: "Administrator"
 
-  # Samba Containers Configuration (for GOSS testing)
-  samba_containers:
-    samba_container_name: "samba_service"
-    samba_hostname: "LocalhostSMB1FR"
-    samba_image_version: "latest"
-    ad_workgroup: "SYCAMORE"
-    ad_realm: "SYCAMORE.DEV.ORG"
-    ad_user: "Administrator"
-    dns_server: "10.90.0.243"
-    samba_legacy_containers:
-      - name: "samba_4.15.13"
-        image: "sycamoreinformatics/dsw_samba:4.15.13"
-        hostname: "samba-cont3"
-        version: "4.15.13"
+  # # Samba Containers Configuration (for GOSS testing)
+  # samba_containers:
+  #   samba_container_name: "samba_service"
+  #   samba_hostname: "LocalhostSMB1FR"
+  #   samba_image_version: "latest"
+  #   ad_workgroup: "SYCAMORE"
+  #   ad_realm: "SYCAMORE.DEV.ORG"
+  #   ad_user: "Administrator"
+  #   dns_server: "10.90.0.243"
+  #   samba_legacy_containers:
+  #     - name: "samba_4.15.13"
+  #       image: "sycamoreinformatics/dsw_samba:4.15.13"
+  #       hostname: "samba-cont3"
+  #       version: "4.15.13"
 
-  # File System Mounts
-  filesystems:
-    mounts:
-      - path: "/data"
-        type: "nfs4"
-        source: "fs-12345678.efs.us-east-2.amazonaws.com"
-        options: ["rw", "hard", "intr", "_netdev"]
-        required: true
-      - path: "/sandbox"
-        type: "nfs4"
-        source: "fs-87654321.efs.us-east-2.amazonaws.com"
-        options: ["rw", "hard", "intr", "_netdev"]
-        required: true
-      - path: "/home"
-        type: "nfs4"
-        source: "fs-11223344.efs.us-east-2.amazonaws.com"
-        options: ["rw", "hard", "intr", "_netdev"]
-        required: true
+  # # File System Mounts
+  # filesystems:
+  #   mounts:
+  #     - path: "/data"
+  #       type: "nfs4"
+  #       source: "fs-12345678.efs.us-east-2.amazonaws.com"
+  #       options: ["rw", "hard", "intr", "_netdev"]
+  #       required: true
+  #     - path: "/sandbox"
+  #       type: "nfs4"
+  #       source: "fs-87654321.efs.us-east-2.amazonaws.com"
+  #       options: ["rw", "hard", "intr", "_netdev"]
+  #       required: true
+  #     - path: "/home"
+  #       type: "nfs4"
+  #       source: "fs-11223344.efs.us-east-2.amazonaws.com"
+  #       options: ["rw", "hard", "intr", "_netdev"]
+  #       required: true
 
-  # Software Versions
-  software_versions:
-    epel_version: "epel-release-9"
-    docker_version: "24.0.7"
-    nginx_version: "1.29.1"
-    java_version: "17"
-    java_package_name: "java-17-openjdk-headless"
-    python_version: "3.9.21"
-    r_lang_version: "4.5.1"
-    redis_version: "6.2.17"
-    samba_version: "4.20.2"
-    shinyproxy_version: "3.1.1"
-    rstudio_version: "2024.12.1"
-    cdr_audit_version: "atlanta-1.0.3.2"
+  # # Software Versions
+  # software_versions:
+  #   epel_version: "epel-release-9"
+  #   docker_version: "24.0.7"
+  #   nginx_version: "1.29.1"
+  #   java_version: "17"
+  #   java_package_name: "java-17-openjdk-headless"
+  #   python_version: "3.9.21"
+  #   r_lang_version: "4.5.1"
+  #   redis_version: "6.2.17"
+  #   samba_version: "4.20.2"
+  #   shinyproxy_version: "3.1.1"
+  #   rstudio_version: "2024.12.1"
+  #   cdr_audit_version: "atlanta-1.0.3.2"
 
-  # Application specific environment
-  application:
-    environment: "dev"
-    log_level: "INFO"
-    monitoring_enabled: true
-    backup_enabled: true
+  # # Application specific environment
+  # application:
+  #   environment: "dev"
+  #   log_level: "INFO"
+  #   monitoring_enabled: false
+  #   backup_enabled: false
   
-  # OS Validations
-  os:
-    family: "redhat"
-    release: "9.5"  # or whatever your CentOS Stream 9 version is
-    arch: "x86_64"
+  # # OS Validations
+  # os:
+  #   family: "redhat"
+  #   release: "9.5"  # or whatever your CentOS Stream 9 version is
+  #   arch: "x86_64"
